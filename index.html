@@ -1,0 +1,638 @@
+ !DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Fowl Manor — Operation: Eleven</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --gold: #c9a84c;
+    --gold-light: #e8cf7e;
+    --gold-dark: #7a5c1e;
+    --gold-deep: #9a7c3a;
+    --ink: #1a1408;
+    --ink-mid: #5c4a1e;
+    --ink-soft: #7a6030;
+    --parchment: #fdfaf3;
+    --parchment-mid: #f8f2e4;
+    --parchment-dark: #f0e8d0;
+    --crimson: #7a1c1c;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    min-height: 100vh;
+    background-color: #0e1a12;
+    background-image:
+      radial-gradient(ellipse at 30% 20%, #1a3020 0%, transparent 55%),
+      radial-gradient(ellipse at 70% 80%, #162414 0%, transparent 50%),
+      url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%23c9a84c' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    font-family: 'Cormorant Garamond', 'Garamond', 'Palatino Linotype', serif;
+    color: var(--ink);
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  .rune-field { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+  .rune {
+    position: absolute; color: #a8c89a; opacity: 0.13;
+    animation: floatRune var(--dur, 14s) ease-in-out var(--delay, 0s) infinite;
+    user-select: none;
+  }
+  @keyframes floatRune {
+    0%, 100% { transform: translateY(0); opacity: 0.11; }
+    50% { transform: translateY(-20px); opacity: 0.2; }
+  }
+
+  .page {
+    max-width: 660px; margin: 0 auto;
+    padding: 52px 20px 64px;
+    position: relative; z-index: 2;
+    animation: fadeUp 1s ease both;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .card {
+    border: 1px solid #c9a84c88;
+    background: linear-gradient(160deg, var(--parchment) 0%, var(--parchment-mid) 50%, var(--parchment) 100%);
+    box-shadow: 0 4px 60px #b8a87822, 0 1px 3px #b8a87811, inset 0 0 80px #e8dfc822;
+    padding: 52px 52px 48px;
+    position: relative;
+  }
+  .card::before {
+    content: ''; position: absolute; inset: 8px;
+    border: 1px solid #c9a84c33; pointer-events: none;
+  }
+
+  .corner { position: absolute; width: 28px; height: 28px; }
+  .corner-tl { top:14px; left:14px; border-top:1px solid #c9a84c99; border-left:1px solid #c9a84c99; }
+  .corner-tr { top:14px; right:14px; border-top:1px solid #c9a84c99; border-right:1px solid #c9a84c99; }
+  .corner-bl { bottom:14px; left:14px; border-bottom:1px solid #c9a84c99; border-left:1px solid #c9a84c99; }
+  .corner-br { bottom:14px; right:14px; border-bottom:1px solid #c9a84c99; border-right:1px solid #c9a84c99; }
+
+  .crest-wrap { text-align: center; margin-bottom: 24px; animation: crestPulse 4s ease-in-out infinite; }
+  @keyframes crestPulse { 0%,100%{opacity:.75} 50%{opacity:1} }
+  .crest-circle {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 76px; height: 76px;
+    border: 1px solid var(--gold); border-radius: 50%;
+    font-family: 'Cinzel', serif; font-size: 22px; font-weight: 600;
+    color: var(--gold);
+    background: linear-gradient(135deg, var(--parchment), var(--parchment-dark));
+    box-shadow: 0 0 0 4px var(--parchment-mid), 0 0 0 5px #c9a84c44;
+    letter-spacing: 2px;
+  }
+
+  .rule {
+    width: 100%; height: 1px; border: none;
+    background: linear-gradient(90deg, transparent, #b8a87855, #c9a84c88, #b8a87855, transparent);
+  }
+
+  .clearance-row {
+    display: flex; align-items: center; gap: 12px; margin: 18px 0;
+  }
+  .clearance-row .rule { flex: 1; }
+  .clearance-text {
+    font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 5px;
+    color: var(--gold-deep); white-space: nowrap;
+  }
+
+  .op-label {
+    text-align: center; margin: 20px 0 6px;
+    font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 6px;
+    color: var(--gold-deep);
+  }
+  .op-title {
+    text-align: center; font-family: 'Cinzel', serif;
+    font-size: clamp(32px, 6vw, 46px); font-weight: 700;
+    letter-spacing: 4px; line-height: 1.1;
+    background: linear-gradient(90deg, #7a5c1e, #c9a84c, #e8cf7e, #c9a84c, #7a5c1e);
+    background-size: 300% auto;
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: shimmerGold 6s linear infinite;
+    margin-bottom: 6px;
+  }
+  @keyframes shimmerGold {
+    0%  { background-position: -300% center; }
+    100%{ background-position:  300% center; }
+  }
+  .op-subtitle {
+    text-align: center; font-style: italic; font-size: 13px;
+    letter-spacing: 3px; color: var(--gold-deep); margin-bottom: 28px;
+  }
+
+  .narrative {
+    font-size: 15px; line-height: 2.1; color: var(--ink);
+    text-align: justify; margin: 24px 0;
+  }
+  .narrative p { margin-bottom: 18px; }
+  .narrative em { color: var(--ink-mid); font-style: italic; }
+  .narrative strong { color: var(--gold-dark); font-weight: 600; }
+
+  .details-grid {
+    display: grid; grid-template-columns: 1fr 1px 1fr; margin: 28px 0;
+  }
+  .detail-col { text-align: center; padding: 0 20px; }
+  .detail-sep { background: linear-gradient(180deg, transparent, #c9a84c66, transparent); }
+  .detail-label {
+    font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 5px;
+    color: var(--gold-deep); margin-bottom: 8px;
+  }
+  .detail-value { font-size: 20px; font-weight: 500; color: var(--ink); letter-spacing: 1px; }
+  .detail-sub { font-size: 12px; font-style: italic; color: var(--ink-soft); margin-top: 4px; }
+
+  .venue-block { text-align: center; margin: 24px 0; }
+  .venue-name { font-size: 18px; font-weight: 500; letter-spacing: 2px; color: var(--ink); }
+  .venue-address { font-size: 14px; color: var(--ink-mid); margin-top: 4px; line-height: 1.9; }
+
+  .attire-box {
+    border: 1px solid #7a1c1c44;
+    background: linear-gradient(135deg, #fdf8f0, #faf3e8);
+    padding: 20px 24px; margin: 24px 0; position: relative;
+  }
+  .attire-header {
+    display: flex; align-items: center; gap: 10px;
+    justify-content: center; margin-bottom: 12px;
+  }
+  .attire-header .rule { flex: 1; background: linear-gradient(90deg, transparent, #7a1c1c33, transparent); }
+  .attire-label {
+    font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 5px;
+    color: var(--crimson); white-space: nowrap;
+  }
+  .attire-text {
+    text-align: center; font-size: 15px; color: var(--ink-mid);
+    line-height: 1.9; margin-bottom: 14px;
+  }
+  .attire-quote {
+    font-style: italic; font-size: 14px; color: var(--ink-soft);
+    line-height: 1.9; text-align: center;
+    border-top: 1px solid #c9a84c22; padding-top: 14px;
+  }
+  .attire-attribution {
+    font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 3px;
+    color: var(--gold-deep); margin-top: 8px; text-align: center;
+  }
+
+  .skull-divider { display: flex; align-items: center; gap: 14px; margin: 6px 0 24px; }
+  .skull-divider .rule { flex: 1; }
+  .skull-icon { font-size: 13px; color: var(--gold-deep); opacity: .7; white-space: nowrap; }
+
+  .puzzle-box {
+    margin: 28px 0; padding: 28px 24px;
+    border: 1px solid #c9a84c44;
+    background: linear-gradient(135deg, var(--parchment-mid), var(--parchment));
+    position: relative;
+  }
+  .puzzle-box-label {
+    position: absolute; top: -9px; left: 50%;
+    transform: translateX(-50%);
+    background: var(--parchment-mid); padding: 0 16px;
+    font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 5px;
+    color: var(--gold-deep); white-space: nowrap;
+  }
+  .puzzle-intro {
+    text-align: center; font-style: italic; font-size: 14px;
+    color: var(--ink-soft); line-height: 1.9; margin-bottom: 22px;
+  }
+  .puzzle-reward {
+    text-align: center; margin-bottom: 18px;
+    font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 4px;
+    color: var(--crimson);
+  }
+
+  .btn-cipher {
+    display: block; margin: 0 auto 20px;
+    background: transparent; border: 1px solid #b8a87899;
+    color: var(--ink-mid); padding: 7px 20px;
+    font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 4px;
+    cursor: pointer; transition: all .2s;
+  }
+  .btn-cipher:hover { border-color: var(--gold-dark); color: var(--gold-dark); }
+
+  .cipher-key {
+    display: none; grid-template-columns: repeat(6, 1fr);
+    gap: 3px; max-width: 420px; margin: 0 auto 24px;
+    border: 1px solid #c9a84c22; padding: 12px;
+    background: var(--parchment);
+  }
+  .cipher-key.visible { display: grid; animation: fadeUp .4s ease; }
+  .cipher-cell { text-align: center; padding: 5px 3px; border-bottom: 1px solid #c9a84c11; }
+  .cipher-symbol { font-size: 15px; color: var(--gold-dark); line-height: 1; }
+  .cipher-letter { font-family:'Cinzel',serif; font-size:8px; letter-spacing:1px; color:var(--gold-deep); margin-top:3px; }
+
+  .encoded-wrap {
+    text-align: center; margin-bottom: 22px; padding: 18px 16px;
+    border: 1px solid #c9a84c33; background: var(--parchment-mid);
+  }
+  .encoded-title {
+    font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 5px;
+    color: var(--gold-deep); margin-bottom: 12px;
+  }
+  .encoded-text {
+    font-size: clamp(20px, 4vw, 28px); letter-spacing: 7px;
+    color: var(--gold-dark); line-height: 2; word-break: break-word;
+  }
+  .cipher-char { display: inline-block; transition: color .2s, transform .2s; cursor: default; }
+  .cipher-char:hover { color: var(--gold); transform: scale(1.25); }
+
+  .riddle-text {
+    font-size: 16px; font-style: italic; color: var(--ink-mid);
+    line-height: 2.1; text-align: center;
+    border: 1px solid #c9a84c33; background: var(--parchment-mid);
+    padding: 22px 24px; margin-bottom: 22px;
+  }
+  .riddle-text strong { color: var(--gold-dark); font-style: normal; font-size: 18px; }
+
+  .answer-label {
+    font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 5px;
+    color: var(--gold-deep); text-align: center; margin-bottom: 12px;
+  }
+  .answer-row { display: flex; max-width: 380px; margin: 0 auto; }
+  .answer-row.shake { animation: shake .5s ease; }
+  @keyframes shake {
+    0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)}
+  }
+  .answer-input {
+    flex: 1; background: var(--parchment);
+    border: 1px solid #c9a84c66; border-right: none;
+    color: var(--ink); padding: 11px 16px;
+    font-family: 'Cormorant Garamond', serif; font-size: 14px; letter-spacing: 2px;
+  }
+  .answer-input:focus { outline: none; }
+  .answer-input::placeholder { color: #b8a87888; }
+  .btn-submit {
+    background: var(--ink); border: none; color: var(--gold-light);
+    padding: 11px 22px; font-family: 'Cinzel', serif;
+    font-size: 9px; letter-spacing: 4px; cursor: pointer; transition: background .2s;
+  }
+  .btn-submit:hover { background: #2e2410; }
+  .answer-hint { text-align: center; margin-top: 10px; font-size: 12px; font-style: italic; color: #9a7c3a99; }
+
+  .solved-reveal { display: none; text-align: center; }
+  .solved-reveal.visible { display: block; animation: fadeUp .8s ease; }
+  .solved-stars { font-size: 11px; color: var(--gold-deep); margin-bottom: 10px; }
+  .solved-phrase {
+    font-family: 'Cinzel', serif; font-size: clamp(15px, 3vw, 20px);
+    font-weight: 600; color: var(--gold-dark); letter-spacing: 4px; margin-bottom: 8px;
+  }
+  .solved-note { font-size: 13px; font-style: italic; color: var(--gold-deep); line-height: 1.8; }
+
+  .priority-unlocked {
+    display: none; text-align: center;
+    border: 1px solid var(--gold); background: var(--parchment-dark);
+    padding: 20px; margin-top: 16px;
+  }
+  .priority-unlocked.visible { display: block; animation: fadeUp .8s ease; }
+  .priority-crown { font-size: 24px; margin-bottom: 8px; }
+  .priority-title {
+    font-family: 'Cinzel', serif; font-size: 12px; letter-spacing: 4px;
+    color: var(--gold-dark); margin-bottom: 8px;
+  }
+  .priority-note { font-size: 13px; font-style: italic; color: var(--ink-soft); line-height: 1.9; }
+
+  .rsvp-block { text-align: center; margin: 24px 0 8px; }
+  .rsvp-label {
+    font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 6px;
+    color: var(--gold-deep); margin-bottom: 14px;
+  }
+  .rsvp-number { font-size: 26px; font-weight: 500; letter-spacing: 4px; color: var(--ink); }
+  .rsvp-warning { margin-top: 10px; font-size: 13px; font-style: italic; color: var(--ink-soft); line-height: 1.9; }
+
+  .closing-text {
+    text-align: center; font-style: italic; font-size: 14px;
+    color: var(--ink-mid); line-height: 2; margin: 20px 0 10px;
+  }
+  .closing-sig {
+    text-align: center; font-style: italic; font-size: 15px;
+    color: var(--gold-dark); margin-top: 16px; font-weight: 500;
+  }
+
+  .card-footer {
+    text-align: center; margin-top: 32px; padding-top: 20px;
+    border-top: 1px solid #c9a84c22;
+  }
+  .footer-runes { font-size: 18px; letter-spacing: 10px; color: #c9a84c55; }
+  .footer-text {
+    margin-top: 8px; font-family: 'Cinzel', serif;
+    font-size: 8px; letter-spacing: 4px; color: #9a7c3a44;
+  }
+
+  @media (max-width: 520px) {
+    .card { padding: 40px 24px 36px; }
+    .details-grid { grid-template-columns: 1fr; gap: 20px; }
+    .detail-sep { display: none; }
+    .clearance-text { font-size: 7px; letter-spacing: 3px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="rune-field" id="runeField"></div>
+
+<div class="page">
+  <div class="card">
+    <div class="corner corner-tl"></div>
+    <div class="corner corner-tr"></div>
+    <div class="corner corner-bl"></div>
+    <div class="corner corner-br"></div>
+
+    <!-- AF Crest -->
+    <div class="crest-wrap">
+      <div class="crest-circle">AF</div>
+    </div>
+
+    <!-- Clearance line -->
+    <div class="clearance-row">
+      <hr class="rule"/>
+      <span class="clearance-text">✦ EYES ONLY · LEVEL 5 CLEARANCE REQUIRED ✦</span>
+      <hr class="rule"/>
+    </div>
+
+    <!-- Operation title -->
+    <div class="op-label">FOWL MANOR · SOUTHLAKE, TEXAS</div>
+    <div class="op-title">OPERATION:<br/>ELEVEN</div>
+    <div class="op-subtitle">A Classified Summons</div>
+
+    <hr class="rule"/>
+
+    <!-- Narrative (from PDF) -->
+    <div class="narrative">
+      <p>You have been identified by <strong>Artemis Fowl II</strong> as a person of exceptional intelligence and impeccable taste — which is to say, you are hereby <em>cordially and non-negotiably summoned</em> to <em>Fowl Manor</em> for a most singular evening.</p>
+
+      <p>Master <strong>Elliot</strong> celebrates his <em>eleventh year</em> among this world's mortals, and in honour of this occasion, the Manor shall host a <em>Murder Mystery Dinner</em> of the highest theatrical order. A crime has been committed within these hallowed walls. Suspects abound. The guilty party walks free — <em>for now.</em></p>
+
+      <p>You are invited not merely to dine, but to <strong>deduce</strong>. Bring your sharpest mind — and be prepared for a night where nothing is as it seems, and everyone is a suspect.</p>
+    </div>
+
+    <hr class="rule"/>
+
+    <!-- Date & Time -->
+    <div class="details-grid">
+      <div class="detail-col">
+        <div class="detail-label">DATE OF OPERATION</div>
+        <div class="detail-value">Saturday, April 18th</div>
+        <div class="detail-sub">in the year 2026</div>
+      </div>
+      <div class="detail-sep"></div>
+      <div class="detail-col">
+        <div class="detail-label">MISSION WINDOW</div>
+        <div class="detail-value">5:30 — 8:30 PM</div>
+        <div class="detail-sub">…for those who make it out alive</div>
+      </div>
+    </div>
+
+    <hr class="rule"/>
+
+    <!-- Venue -->
+    <div class="venue-block">
+      <div class="detail-label">MANOR LOCATION</div>
+      <div class="venue-name">Fowl Manor</div>
+      <div class="venue-address">
+        2713 Derby Court<br/>
+        Southlake, Texas &nbsp;76092
+      </div>
+    </div>
+
+    <hr class="rule"/>
+
+    <!-- Attire box (Butler's classified quote) -->
+    <div class="attire-box">
+      <div class="attire-header">
+        <hr class="rule"/>
+        <span class="attire-label">⚠ CLASSIFIED ⚠</span>
+        <hr class="rule"/>
+      </div>
+      <div class="attire-text">
+        <span style="font-family:'Cinzel',serif; font-size:11px; letter-spacing:3px; color:#1a1408;">REQUIRED ATTIRE</span><br/><br/>
+        Formal. Elegant. Impeccable.<br/>
+        <em>Costumes welcome. Rags are not.</em>
+      </div>
+      <div class="attire-quote">
+        "Dress as though you are dining with the most dangerous genius in Ireland.<br/>
+        Because you are."
+        <div class="attire-attribution">— BUTLER, HEAD OF SECURITY</div>
+      </div>
+    </div>
+
+    <!-- Skull divider -->
+    <div class="skull-divider">
+      <hr class="rule"/>
+      <span class="skull-icon">✦ ☠ ✦</span>
+      <hr class="rule"/>
+    </div>
+
+    <!-- PUZZLE 1 — Cipher -->
+    <div class="puzzle-box">
+      <div class="puzzle-box-label">ENCRYPTED COMMUNIQUÉ</div>
+
+      <div class="puzzle-intro">
+        Butler has intercepted the following transmission from Artemis Fowl II himself.<br/>
+        Decode the Fowl Cipher to receive your true evening's summons.
+      </div>
+
+      <div style="text-align:center; margin-bottom:22px; padding:16px 18px; border:1px solid #c9a84c55; background:var(--parchment-dark);">
+        <div style="font-family:'Cinzel',serif; font-size:8px; letter-spacing:5px; color:var(--crimson); margin-bottom:10px;">⚑ &nbsp; INTELLIGENCE BRIEFING &nbsp; ⚑</div>
+        <div style="font-size:14px; font-style:italic; color:var(--ink-mid); line-height:2;">
+          Agents who successfully decode this transmission will receive<br/>
+          <strong style="color:var(--gold-dark); font-style:normal;">one exclusive clue</strong> upon arrival at the Manor —<br/>
+          intelligence that no other guest will possess.<br/>
+          <span style="font-size:12px; color:var(--gold-deep); font-style:normal; font-family:'Cinzel',serif; letter-spacing:2px;">IN A MURDER MYSTERY, INFORMATION IS EVERYTHING.</span>
+        </div>
+      </div>
+
+      <button class="btn-cipher" id="cipherBtn" onclick="toggleCipher()">
+        ▼ REVEAL THE FOWL CIPHER
+      </button>
+
+      <div class="cipher-key" id="cipherKey"></div>
+
+      <div class="encoded-wrap">
+        <div class="encoded-title">DECODE THIS MESSAGE</div>
+        <div class="encoded-text" id="encodedMsg"></div>
+      </div>
+
+      <div id="answerArea1">
+        <div class="answer-label">YOUR DECODED ANSWER</div>
+        <div class="answer-row" id="answerRow1">
+          <input class="answer-input" id="answerInput1" type="text"
+            placeholder="Enter your answer..."
+            onkeydown="if(event.key==='Enter') checkAnswer1()"/>
+          <button class="btn-submit" onclick="checkAnswer1()">SUBMIT</button>
+        </div>
+        <div class="answer-hint">Hint: Four words. An invitation.</div>
+      </div>
+
+      <div class="solved-reveal" id="solvedReveal1">
+        <div class="solved-stars">✦ &nbsp; ✦ &nbsp; ✦</div>
+        <div class="solved-phrase">COME DINE WITH DANGER</div>
+        <div class="solved-note">Cipher decoded. Artemis is… appropriately impressed.</div>
+      </div>
+    </div>
+
+    <!-- PUZZLE 2 — Butler's Riddle -->
+    <div class="puzzle-box">
+      <div class="puzzle-box-label" style="color:var(--crimson);">THE BUTLER'S CHALLENGE</div>
+
+      <div class="puzzle-reward">★ &nbsp; SOLVE FOR PRIORITY SEATING AT THE TABLE &nbsp; ★</div>
+
+      <div class="puzzle-intro">
+        Butler does not yield the finest chair lightly.<br/>
+        Those who answer correctly shall be seated at the head — closest to the clues,<br/>and closest to the danger.
+      </div>
+
+      <div class="riddle-text">
+        I have no body, yet I leave marks.<br/>
+        I have no mouth, yet I tell all secrets.<br/>
+        I can convict the innocent and free the guilty.<br/>
+        Artemis has used me to outwit both fairies and men.<br/><br/>
+        <strong>What am I?</strong>
+      </div>
+
+      <div id="answerArea2">
+        <div class="answer-label">YOUR ANSWER TO BUTLER</div>
+        <div class="answer-row" id="answerRow2">
+          <input class="answer-input" id="answerInput2" type="text"
+            placeholder="One word..."
+            onkeydown="if(event.key==='Enter') checkAnswer2()"/>
+          <button class="btn-submit" onclick="checkAnswer2()">SUBMIT</button>
+        </div>
+        <div class="answer-hint">Hint: Artemis always leaves one behind.</div>
+      </div>
+
+      <div class="solved-reveal" id="solvedReveal2">
+        <div class="solved-stars">✦ &nbsp; ✦ &nbsp; ✦</div>
+        <div class="solved-phrase">EVIDENCE</div>
+        <div class="solved-note">
+          Correct. Butler is… grudgingly satisfied.<br/>
+          Your priority seating has been confirmed.
+        </div>
+      </div>
+
+      <div class="priority-unlocked" id="priorityUnlocked">
+        <div class="priority-crown">👑</div>
+        <div class="priority-title">PRIORITY SEATING · CONFIRMED</div>
+        <div class="priority-note">
+          You shall be seated at the head of the table —<br/>
+          closest to the evidence, and to the murderer.<br/>
+          <em>Butler will be watching.</em>
+        </div>
+      </div>
+    </div>
+
+    <hr class="rule"/>
+
+    <!-- RSVP -->
+    <div class="rsvp-block">
+      <div class="rsvp-label">CONFIRM YOUR ATTENDANCE WITH THE BUTLER</div>
+      <div class="rsvp-number">214 · 783 · 2441</div>
+      <div class="rsvp-warning">
+        Failure to RSVP may result in being classified as a suspect.<br/>
+        <em>Butler does not appreciate surprises. Unless he is the one causing them.</em>
+      </div>
+    </div>
+
+    <hr class="rule"/>
+
+    <!-- Closing -->
+    <div class="closing-text">
+      This invitation will self-destruct in the hands of the unworthy.<br/>
+      The Manor awaits. The mystery is already underway.
+    </div>
+    <div class="closing-sig">— Artemis Fowl II, Age 11 —</div>
+
+    <!-- Footer -->
+    <div class="card-footer">
+      <div class="footer-runes">ᚠ ᚢ ᚦ ᚨ ᚱ ᚲ ᚷ ᚹ ᚺ</div>
+      <div class="footer-text">FOWL MANOR SECURITY CLEARANCE · LEVEL OMEGA · APRIL XVIII · MMXXVI</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── Puzzle 1: Cipher ───────────────────────────────────────────
+  const CIPHER = {
+    A:'⬡',B:'⬢',C:'◈',D:'◆',E:'◇',F:'▲',G:'△',H:'●',I:'○',J:'◉',
+    K:'★',L:'☆',M:'◐',N:'◑',O:'◒',P:'◓',Q:'⬟',R:'⬠',S:'◼',T:'◻',
+    U:'▣',V:'▤',W:'▥',X:'▦',Y:'▧',Z:'▨',' ':' '
+  };
+  const MSG1 = "COME DINE WITH DANGER";
+  const ENCODED = MSG1.split('').map(c => CIPHER[c] || c).join('');
+
+  const msgEl = document.getElementById('encodedMsg');
+  ENCODED.split('').forEach(ch => {
+    const s = document.createElement('span');
+    s.className = 'cipher-char'; s.textContent = ch;
+    msgEl.appendChild(s);
+  });
+
+  const keyEl = document.getElementById('cipherKey');
+  Object.entries(CIPHER).filter(([k]) => k !== ' ').forEach(([letter, symbol]) => {
+    const cell = document.createElement('div');
+    cell.className = 'cipher-cell';
+    cell.innerHTML = `<div class="cipher-symbol">${symbol}</div><div class="cipher-letter">${letter}</div>`;
+    keyEl.appendChild(cell);
+  });
+
+  function toggleCipher() {
+    const key = document.getElementById('cipherKey');
+    const btn = document.getElementById('cipherBtn');
+    key.classList.toggle('visible');
+    btn.textContent = key.classList.contains('visible')
+      ? '▲ CONCEAL THE FOWL CIPHER' : '▼ REVEAL THE FOWL CIPHER';
+  }
+
+  function checkAnswer1() {
+    const val = document.getElementById('answerInput1').value.trim().toUpperCase();
+    if (val === MSG1) {
+      document.getElementById('answerArea1').style.display = 'none';
+      document.getElementById('solvedReveal1').classList.add('visible');
+    } else {
+      const row = document.getElementById('answerRow1');
+      row.classList.add('shake');
+      setTimeout(() => row.classList.remove('shake'), 500);
+    }
+  }
+
+  // ── Puzzle 2: Butler's Riddle ──────────────────────────────────
+  const RIDDLE_ANSWERS = ['EVIDENCE','CLUE','PROOF','RECORD'];
+
+  function checkAnswer2() {
+    const val = document.getElementById('answerInput2').value.trim().toUpperCase();
+    if (RIDDLE_ANSWERS.includes(val)) {
+      document.getElementById('answerArea2').style.display = 'none';
+      document.getElementById('solvedReveal2').classList.add('visible');
+      setTimeout(() => {
+        document.getElementById('priorityUnlocked').classList.add('visible');
+      }, 900);
+    } else {
+      const row = document.getElementById('answerRow2');
+      row.classList.add('shake');
+      setTimeout(() => row.classList.remove('shake'), 500);
+    }
+  }
+
+  // ── Floating runes ─────────────────────────────────────────────
+  const RUNES = ['ᚠ','ᚢ','ᚦ','ᚨ','ᚱ','ᚲ','ᚷ','ᚹ','ᚺ','ᚾ','ᛁ','ᛃ','ᛇ','ᛈ','ᛉ','ᛊ','ᛏ','ᛒ','ᛖ','ᛗ','ᛚ','ᛜ','ᛞ','ᛟ'];
+  const field = document.getElementById('runeField');
+  for (let i = 0; i < 22; i++) {
+    const r = document.createElement('div');
+    r.className = 'rune';
+    r.textContent = RUNES[Math.floor(Math.random() * RUNES.length)];
+    r.style.left = Math.random() * 100 + '%';
+    r.style.top  = Math.random() * 100 + '%';
+    r.style.setProperty('--dur',   (Math.random() * 14 + 10) + 's');
+    r.style.setProperty('--delay', (Math.random() * 8) + 's');
+    r.style.fontSize = (Math.random() * 14 + 10) + 'px';
+    field.appendChild(r);
+  }
+</script>
+</body>
+</html>
